@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "488899386794-htpl5bu5b5cc38ebp9rvb020am1fo2ao.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.easycart",
+            "certificate_hash": "4e2b6ef0711d8382e173ee35bb1f4970bc462521"
+          }
+        },
+        {
           "client_id": "488899386794-0pimv46663mtqf5aamj4klc0pop7pkf5.apps.googleusercontent.com",
           "client_type": 3
         }
