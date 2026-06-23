@@ -43,10 +43,10 @@ android {
 
 
 dependencies {
-    // 🧠 Compose BOM (controls all Compose versions)
+
     implementation(platform(libs.androidx.compose.bom))
 
-    // UI CORE
+
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -58,11 +58,11 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // Core Android libs
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    // Testing
+
     testImplementation(libs.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -77,7 +77,7 @@ dependencies {
     //lottie animation
     implementation(libs.dotlottie.android)
 
-    // 🔐 Google Sign-In (Credential Manager - modern way)
+    // Google Sign-In
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
