@@ -34,21 +34,22 @@ fun OnboardingScreen(
     val pages = listOf(
 
         OnboardingPage(
-            R.drawable.easylogo,
+            R.drawable.image1,
             "Welcome to EasyCart",
-            "Buy and sell products around your campus with trusted students."
+            "Buy and sell products around your campus with trusted students.",
         ),
 
         OnboardingPage(
-            R.drawable.easylogo,
+            R.drawable.image2,
             "Fast Marketplace",
-            "Discover books, electronics, furniture and fashion in seconds."
+            "Discover books, electronics, furniture and fashion in seconds.",
+
         ),
 
         OnboardingPage(
-            R.drawable.easylogo,
+            R.drawable.image3,
             "Safe & Secure",
-            "Verified users and secure transactions make shopping worry-free."
+            "Verified users and secure transactions make shopping worry-free.",
         )
     )
 

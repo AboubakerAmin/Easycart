@@ -34,8 +34,13 @@ fun ProfileScreen(
     onNavigateToLogin: () -> Unit,
     onLogout: () -> Unit
 ) {
+    // FIX: Pass onLogout to GuestProfilePlaceholder so guest users
+    // can sign out of their anonymous session
     if (isGuest) {
-        GuestProfilePlaceholder(onNavigateToLogin = onNavigateToLogin)
+        GuestProfilePlaceholder(
+            onNavigateToLogin = onNavigateToLogin,
+            onLogout = onLogout
+        )
         return
     }
 
@@ -137,7 +142,9 @@ fun ProfileScreen(
         item {
             Spacer(Modifier.height(12.dp))
             SectionHeader("My Orders")
-            Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)) {
                 val orderStatuses = listOf(
                     Triple(Icons.Outlined.Pending, "Pending", "Awaiting confirmation"),
                     Triple(Icons.Outlined.LocalShipping, "In Transit", "On the way"),
@@ -146,7 +153,10 @@ fun ProfileScreen(
                 )
                 orderStatuses.forEach { (icon, label, sub) ->
                     ProfileMenuItem(icon = icon, label = label, subtitle = sub) {}
-                    if (label != "Cancelled") Divider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(start = 56.dp))
+                    if (label != "Cancelled") Divider(
+                        color = Color(0xFFF5F5F5),
+                        modifier = Modifier.padding(start = 56.dp)
+                    )
                 }
             }
         }
@@ -155,7 +165,9 @@ fun ProfileScreen(
         item {
             Spacer(Modifier.height(12.dp))
             SectionHeader("Account")
-            Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)) {
                 val settingsItems = listOf(
                     Triple(Icons.Outlined.Person, "Edit Profile", "Update your information"),
                     Triple(Icons.Outlined.LocationOn, "Delivery Addresses", "Manage your addresses"),
@@ -164,7 +176,10 @@ fun ProfileScreen(
                 )
                 settingsItems.forEach { (icon, label, sub) ->
                     ProfileMenuItem(icon = icon, label = label, subtitle = sub) {}
-                    if (label != "Security") Divider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(start = 56.dp))
+                    if (label != "Security") Divider(
+                        color = Color(0xFFF5F5F5),
+                        modifier = Modifier.padding(start = 56.dp)
+                    )
                 }
             }
         }
@@ -173,7 +188,9 @@ fun ProfileScreen(
         item {
             Spacer(Modifier.height(12.dp))
             SectionHeader("Support")
-            Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)) {
                 ProfileMenuItem(Icons.Outlined.HelpOutline, "Help Center", "FAQs and guides") {}
                 Divider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(start = 56.dp))
                 ProfileMenuItem(Icons.Outlined.Info, "About EasyCart", "Version 1.0.0") {}
@@ -195,9 +212,19 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.ExitToApp,
+                        contentDescription = null,
+                        tint = Color(0xFFE53935),
+                        modifier = Modifier.size(20.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
-                    Text("Sign Out", color = Color(0xFFE53935), fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Text(
+                        "Sign Out",
+                        color = Color(0xFFE53935),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
                 }
             }
         }
@@ -254,12 +281,45 @@ fun ProfileMenuItem(
             Text(label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = DarkText)
             Text(subtitle, fontSize = 12.sp, color = GrayText)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFFBDBDBD), modifier = Modifier.size(20.dp))
+        Icon(
+            Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = Color(0xFFBDBDBD),
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
 @Composable
-fun GuestProfilePlaceholder(onNavigateToLogin: () -> Unit) {
+fun GuestProfilePlaceholder(
+    onNavigateToLogin: () -> Unit,
+    // FIX: Added onLogout parameter so guest users can sign out
+    // of their anonymous Firebase session
+    onLogout: () -> Unit
+) {
+    var showSignOutDialog by remember { mutableStateOf(false) }
+
+    // Confirmation dialog before signing out anonymous session
+    if (showSignOutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSignOutDialog = false },
+            title = { Text("Sign Out", fontWeight = FontWeight.Bold) },
+            text = { Text("This will end your guest session. Any unsaved data will be lost.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSignOutDialog = false
+                        onLogout()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                ) { Text("Sign Out") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showSignOutDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -274,21 +334,55 @@ fun GuestProfilePlaceholder(onNavigateToLogin: () -> Unit) {
                 .background(OrangeSoft),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = Orange, modifier = Modifier.size(44.dp))
+            Icon(
+                Icons.Default.Person,
+                contentDescription = null,
+                tint = Orange,
+                modifier = Modifier.size(44.dp)
+            )
         }
         Spacer(Modifier.height(20.dp))
-        Text("You're browsing as a guest", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DarkText)
+        Text(
+            "You're browsing as a guest",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = DarkText
+        )
         Spacer(Modifier.height(8.dp))
         Text("Sign in to access your profile,", fontSize = 14.sp, color = GrayText)
         Text("orders, wishlist and more.", fontSize = 14.sp, color = GrayText)
         Spacer(Modifier.height(28.dp))
+
+        // Sign In / Register button
         Button(
             onClick = onNavigateToLogin,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Orange),
-            modifier = Modifier.height(50.dp).width(220.dp)
+            modifier = Modifier
+                .height(50.dp)
+                .width(220.dp)
         ) {
             Text("Sign In / Register", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // FIX: Sign Out button for guest — ends anonymous session
+        // so user is taken back to Onboarding/Auth screen
+        TextButton(onClick = { showSignOutDialog = true }) {
+            Icon(
+                Icons.Default.ExitToApp,
+                contentDescription = null,
+                tint = Color(0xFFE53935),
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                "Sign Out",
+                color = Color(0xFFE53935),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
         }
     }
 }

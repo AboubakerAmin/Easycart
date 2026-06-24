@@ -113,6 +113,8 @@ fun HomeScreen(
     onToggleLike: (String) -> Unit,
     onAddToCart: (Product) -> Unit,
     onBuyNow: (Product) -> Unit,
+    // FIX: This must call auth.signOut() on the anonymous session
+    // before navigating — handled in AppNavigation's onNavigateToLogin lambda
     onNavigateToLogin: () -> Unit
 ) {
     var search by remember { mutableStateOf("") }
@@ -127,12 +129,16 @@ fun HomeScreen(
         matchesCategory && matchesSearch
     }
 
+    // FIX: Pass the real onNavigateToLogin so the dialog routes correctly.
+    // Previously the dialog's onLogin just called onNavigateToLogin() which
+    // pushed Auth without signing out the anonymous session — Firebase would
+    // then immediately bounce back to Main via the LaunchedEffect in AuthScreen.
     LoginRequiredDialog(
         show = showLoginDialog,
         onDismiss = { showLoginDialog = false },
         onLogin = {
             showLoginDialog = false
-            onNavigateToLogin()
+            onNavigateToLogin() // This now signs out anonymous first (see AppNavigation)
         }
     )
 
@@ -250,6 +256,9 @@ fun HomeScreen(
                         }
                     },
                     onAddToCart = {
+                        // FIX: Show login dialog instead of silently failing.
+                        // The dialog's onLogin calls onNavigateToLogin which now
+                        // correctly signs out the anonymous session before routing.
                         if (isGuest) showLoginDialog = true
                         else onAddToCart(product)
                     }
@@ -301,10 +310,17 @@ fun HomeProductCard(
                                 .background(Orange)
                                 .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
-                            val orig = product.originalPrice.filter { it.isDigit() }.toLongOrNull() ?: 1L
-                            val curr = product.price.filter { it.isDigit() }.toLongOrNull() ?: 1L
+                            val orig =
+                                product.originalPrice.filter { it.isDigit() }.toLongOrNull() ?: 1L
+                            val curr =
+                                product.price.filter { it.isDigit() }.toLongOrNull() ?: 1L
                             val disc = ((orig - curr) * 100 / orig).toInt()
-                            Text("-$disc%", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "-$disc%",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

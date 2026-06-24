@@ -1,4 +1,3 @@
-
 package com.example.easycart.navigation
 
 import androidx.compose.runtime.*
@@ -96,8 +95,8 @@ fun AppNavigation() {
         // ─── ONBOARDING ───────────────────────────────────────────────────
         composable(Screen.Onboarding.route) {
 
-            // KEY FIX: watch authState here so when signInAnonymously() resolves
-            // and Firebase updates the current user, we navigate immediately.
+            // Watch authState: when signInAnonymously() resolves and Firebase
+            // updates the current user, navigate immediately.
             LaunchedEffect(authState.value) {
                 if (authState.value != null) {
                     navController.navigate(Screen.Main.route) {
@@ -122,9 +121,16 @@ fun AppNavigation() {
         composable(Screen.Auth.route) {
             val context = androidx.compose.ui.platform.LocalContext.current
 
-            // KEY FIX: same watcher for the Auth screen's "Continue as Guest" button
+            // Watch authState: navigate to Main once a real (non-anonymous)
+            // user is signed in. We guard against anonymous users here so
+            // that signing out an anonymous session on this screen does NOT
+            // trigger a loop back to Main.
             LaunchedEffect(authState.value) {
-                if (authState.value != null) {
+                val user = authState.value
+                // FIX: Only auto-navigate if the signed-in user is NOT anonymous.
+                // Previously this fired for anonymous users too, causing the
+                // "Sign In / Register" button to immediately bounce back to Main.
+                if (user != null && !user.isAnonymous) {
                     navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Auth.route) { inclusive = true }
                     }
@@ -170,8 +176,18 @@ fun AppNavigation() {
                 isGuest = user.isAnonymous,
                 cartItems = cartItems,
                 likedProducts = likedProducts,
+                // FIX: Sign out the anonymous session BEFORE navigating to Auth.
+                // Without this, Firebase still sees a logged-in anonymous user,
+                // and the LaunchedEffect in AuthScreen immediately bounces back to Main.
                 onNavigateToLogin = {
-                    navController.navigate(Screen.Auth.route)
+                    if (auth.currentUser?.isAnonymous == true) {
+                        auth.signOut()
+                        cartMap.clear()
+                        likedProducts.clear()
+                    }
+                    navController.navigate(Screen.Auth.route) {
+                        popUpTo(Screen.Main.route) { inclusive = true }
+                    }
                 },
                 onLogout = {
                     auth.signOut()
@@ -215,8 +231,16 @@ fun AppNavigation() {
                     addToCart(p)
                     navController.navigate(Screen.Payment.route)
                 },
+                // FIX: Also sign out anonymous session from product detail screen
                 onNavigateToLogin = {
-                    navController.navigate(Screen.Auth.route)
+                    if (auth.currentUser?.isAnonymous == true) {
+                        auth.signOut()
+                        cartMap.clear()
+                        likedProducts.clear()
+                    }
+                    navController.navigate(Screen.Auth.route) {
+                        popUpTo(Screen.Main.route) { inclusive = true }
+                    }
                 }
             )
         }
